@@ -1,15 +1,15 @@
 CC = gcc
-CFLAGS = -Wall -pthread -I./src
+CFLAGS = -Wall -Wextra -g
 SRC_DIR = src
-OBJ_DIR = obj
-OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/hash.o $(OBJ_DIR)/hash_functions.o $(OBJ_DIR)/rwlock.o
+TARGET = chash
 
-chash: $(OBJS)
-	$(CC) $(CFLAGS) -o chash $(OBJS)
+# List all the source files
+SRC_FILES = chash.c $(SRC_DIR)/hash.c $(SRC_DIR)/hash_functions.c $(SRC_DIR)/rwlock.c
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+# The default rule: compile and link everything into the executable
+$(TARGET): $(SRC_FILES)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRC_FILES)
 
+# Clean up the generated files
 clean:
-	rm -rf $(OBJ_DIR) chash output.txt
+	rm -f $(TARGET)

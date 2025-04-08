@@ -1,5 +1,5 @@
 #ifndef HASH_H
-#define HASH _H
+#define HASH_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -12,6 +12,6 @@ typedef struct hash_struct
     struct hash_struct *next;
 } hashRecord;
 
-uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length);
+uint32_t jenkins_one_at_a_time_hash(const char* key, size_t length);
 
 #endif 

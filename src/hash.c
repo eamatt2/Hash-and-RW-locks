@@ -2,7 +2,7 @@
 #include "hash.h"
 
 //jenkins one time hash implementation
-uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length) {
+uint32_t jenkins_one_at_a_time_hash(const char* key, size_t length) {
     size_t i = 0;
     uint32_t hash = 0;
     while (i != length) {

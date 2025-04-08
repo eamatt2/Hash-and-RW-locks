@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hash.h"
-#include "rwlock.h"
+#include "hash_functions.h"
 
 hashRecord *head = NULL;
 extern rwlock_t table_lock;
@@ -12,7 +11,7 @@ void insert(char *name, uint32_t salary) {
     // lock is not defined
     rwlock_acquire_writelock(&table_lock);
 
-    u_int32_t hash = jenkins_one_at_a_time_hash(name, strlen(name));
+    uint32_t hash = jenkins_one_at_a_time_hash(name, strlen(name));
     hashRecord *curr = head;
 
     while(curr != NULL) {
@@ -39,7 +38,7 @@ void insert(char *name, uint32_t salary) {
 void delete(char *name) {
     rwlock_acquire_writelock(&table_lock);
 
-    u_int32_t hash = jenkins_one_at_a_time_hash(name, strlen(name));
+    uint32_t hash = jenkins_one_at_a_time_hash(name, strlen(name));
 
     hashRecord *curr = head, *prev = NULL;
 
@@ -67,7 +66,7 @@ hashRecord* search(char *name) {
     hashRecord *curr = NULL;
 
     while(curr != NULL) {
-        if(curr->hash = hash) {
+        if(curr->hash == hash) {
             rwlock_release_readlock(&table_lock);
             return curr;
         }

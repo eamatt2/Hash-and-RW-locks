@@ -2,16 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include "hash.h"
-#include "rwlock.h"
+#include "src/hash.h"
+#include "src/rwlock.h"
+#include "src/hash_functions.h"
 
 // Global lock
 rwlock_t table_lock;
-
-// Declare your hash functions
-void insert(char *name, uint32_t salary);
-void delete(char *name);
-hashRecord* search(char *name);
 
 // Output file pointer
 FILE *out;
@@ -29,7 +25,7 @@ int main() {
         perror("Could not open commands.txt");
         return 1;
     }
-
+    printf("imalive");
     // Open output.txt for writing
     out = fopen("output.txt", "w");
     if (!out) {
