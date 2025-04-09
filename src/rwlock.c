@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "rwlock.h"
+#include <time.h>
+
+//global time variables
+struct timespec ts;
+long long nanosec;
 
 // Semaphore wrapper functions
 void Sem_init(sem_t *sem, int value) {
@@ -39,6 +44,8 @@ void rwlock_acquire_readlock(rwlock_t *lock) {
     if (lock->readers == 1)
         Sem_wait(&lock->writelock);
     Sem_post(&lock->lock);
+    clock_gettime(CLOCK_REALTIME,&ts);
+    fprintf(out, "%lld,READ LOCK AQUIRED\n", ts);
 }
 
 // Release a read lock
@@ -48,14 +55,21 @@ void rwlock_release_readlock(rwlock_t *lock) {
     if (lock->readers == 0)
         Sem_post(&lock->writelock);
     Sem_post(&lock->lock);
+    clock_gettime(CLOCK_REALTIME,&ts);
+    fprintf(out, "%lld,READ LOCK RELEASED\n", ts);
 }
 
 // Acquire a write lock
 void rwlock_acquire_writelock(rwlock_t *lock) {
     Sem_wait(&lock->writelock);
+    clock_gettime(CLOCK_REALTIME,&ts);
+    fprintf(out, "%lld,WRITE LOCK AQUIRED\n", ts);
+    printf("Write lock awughe");
 }
 
 // Release a write lock
 void rwlock_release_writelock(rwlock_t *lock) {
     Sem_post(&lock->writelock);
+    clock_gettime(CLOCK_REALTIME,&ts);
+    fprintf(out, "%lld,WRITE LOCK RELEASED\n", ts);
 }
