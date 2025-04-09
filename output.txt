@@ -1,5 +1,4 @@
-Running 0 threads
-INSERT,Richard Garriot,40000
+Running 0 threadsINSERT,Richard Garriot,40000
 INSERT,Sid Meier,50000
 INSERT,Shigeru Miyamoto,51000
 DELETE,Sid Meier
