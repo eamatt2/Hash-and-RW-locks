@@ -1,0 +1,11 @@
+Running 0 threads
+INSERT,Richard Garriot,40000
+INSERT,Sid Meier,50000
+INSERT,Shigeru Miyamoto,51000
+DELETE,Sid Meier
+INSERT,Hideo Kojima,45000
+INSERT,Gabe Newell,49000
+INSERT,Roberta Williams,45900
+DELETE,Richard Garriot
+INSERT,Carol Shaw,41000
+SEARCH,Sid Meier, No Record Found
