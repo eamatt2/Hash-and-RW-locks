@@ -2,6 +2,8 @@
 #define RWLOCK_H
 
 #include <semaphore.h>
+#include "../chash.h"
+
 
 // Reader-writer lock structure
 typedef struct {
