@@ -3,7 +3,8 @@
 
 #include <semaphore.h>
 #include "../chash.h"
-
+extern int lockAquired;
+extern int lockReleased;
 
 // Reader-writer lock structure
 typedef struct {

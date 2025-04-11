@@ -6,3 +6,4 @@ void delete(char *name);
 hashRecord* search(char *name);
 void printBucket(hashRecord *head);
 void check_delete(char * name);
+extern hashRecord *head;

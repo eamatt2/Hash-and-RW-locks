@@ -4,11 +4,12 @@
 #include "hash_functions.h"
 #include <time.h>
 
-hashRecord *head = NULL;
 extern rwlock_t table_lock;
 
 struct timespec ts2;
 long long nanosec2;
+
+hashRecord *head = NULL;
 
 //insert
 uint32_t insert(char *name, uint32_t salary) {
@@ -104,8 +105,9 @@ hashRecord* search(char *name) {
 
 void printBucket(hashRecord *head) {
     hashRecord *current = head;
+    printf("I am trying my best???");
     while (current != NULL) {
-        printf("Hash: %u, Name: %s, Salary: %u\n", current->hash, current->name, current->salary);
+        fprintf(out, "Hash: %u, Name: %s, Salary: %u\n", current->hash, current->name, current->salary);
         current = current->next;
     }
 }
