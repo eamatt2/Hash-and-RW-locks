@@ -7,7 +7,7 @@ hashRecord *head = NULL;
 extern rwlock_t table_lock;
 
 //insert
-void insert(char *name, uint32_t salary) {
+uint32_t insert(char *name, uint32_t salary) {
     // lock is not defined
     rwlock_acquire_writelock(&table_lock);
 
@@ -17,7 +17,7 @@ void insert(char *name, uint32_t salary) {
     while(curr != NULL) {
         if(curr->hash == hash) {
             curr->salary = salary;
-            return;
+            return hash;
         }
         curr = curr->next;
     }
@@ -31,6 +31,7 @@ void insert(char *name, uint32_t salary) {
     head = new_node;
 
     rwlock_release_writelock(&table_lock);
+    return hash;
 }
 
 //delete

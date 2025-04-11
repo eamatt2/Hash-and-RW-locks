@@ -67,9 +67,9 @@ int main() {
             char *salary_str = strtok(NULL, ",");
             if (name && salary_str) {
                 uint32_t salary = atoi(salary_str);
-                insert(name, salary);
+                uint32_t hash_value = insert(name, salary);
                 clock_gettime(CLOCK_REALTIME,&ts);
-                fprintf(out, "%ld: INSERT,%s,%s,%s\n", ts.tv_nsec, hash_value, name, salary_str);            
+                fprintf(out, "%ld: INSERT,%u,%s,%s\n", ts.tv_nsec, hash_value, name, salary_str);            
             }
         } else if (strcmp(cmd, "delete") == 0) {
             fprintf(out, "%ld: DELETE AWAKENED\n", ts.tv_nsec);
