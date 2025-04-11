@@ -78,3 +78,11 @@ hashRecord* search(char *name) {
     return NULL;
 
 }
+
+void printBucket(hashRecord *head) {
+    hashRecord *current = head;
+    while (current != NULL) {
+        printf("Hash: %u, Name: %s, Salary: %u\n", current->hash, current->name, current->salary);
+        current = current->next;
+    }
+}

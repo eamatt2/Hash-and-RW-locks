@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "src/hash.h"
 #include "src/rwlock.h"
+#include "src/rwlock.c"
 #include "src/hash_functions.h"
 #include "chash.h"
 #include <time.h>
@@ -90,6 +91,10 @@ int main() {
             }
         }
     }
+
+    printf("Number of lock acquisitions: %d", lockAquired);
+    printf("Number of lock releases: %d", lockReleased);
+    void printBucket(hashRecord *head);
 
     fclose(cmds);
     fclose(out);
