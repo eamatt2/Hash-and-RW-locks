@@ -48,8 +48,8 @@ void rwlock_acquire_readlock(rwlock_t *lock) {
     if (lock->readers == 1)
         Sem_wait(&lock->writelock);
     Sem_post(&lock->lock);
-    clock_gettime(CLOCK_REALTIME,&ts);
-    fprintf(out, "%ld,READ LOCK AQUIRED\n", ts.tv_nsec);
+    clock_gettime(CLOCK_REALTIME,&ts1);
+    fprintf(out, "%lld%ld,READ LOCK AQUIRED\n", ts1.tv_sec, ts1.tv_nsec);
 }
 
 // Release a read lock

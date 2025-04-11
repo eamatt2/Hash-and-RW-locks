@@ -2,9 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hash_functions.h"
+#include <time.h>
 
 hashRecord *head = NULL;
 extern rwlock_t table_lock;
+
+struct timespec ts2;
+long long nanosec2;
 
 //insert
 uint32_t insert(char *name, uint32_t salary) {
@@ -36,6 +40,25 @@ uint32_t insert(char *name, uint32_t salary) {
 
 //delete
 // need to be imporved
+void check_delete(char * name) {
+
+    //check if all of the insert statements are done from the input file
+    
+    //return 1 if the delete function SHOULD NOT RUN add name to a queue
+    //add the names to a queue
+    return; 
+
+    //if the code should run run everything in the queue and print this line
+    clock_gettime(CLOCK_REALTIME,&ts2);
+    fprintf(out, "%lld%ld,DELETE AWAKENED\n", ts2.tv_sec, ts2.tv_nsec);
+    delete(name); //make sure you delete everything in the queue
+    return;
+}
+
+
+
+
+
 void delete(char *name) {
     rwlock_acquire_writelock(&table_lock);
 
