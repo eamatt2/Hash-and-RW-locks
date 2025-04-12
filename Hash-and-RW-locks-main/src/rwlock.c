@@ -49,7 +49,7 @@ void rwlock_acquire_readlock(rwlock_t *lock) {
         Sem_wait(&lock->writelock);
     Sem_post(&lock->lock);
     clock_gettime(CLOCK_REALTIME,&ts1);
-    fprintf(out, "%lld%ld,READ LOCK AQUIRED\n", ts1.tv_sec, ts1.tv_nsec);
+    fprintf(out, "%lld%ld: READ LOCK AQUIRED\n", ts1.tv_sec, ts1.tv_nsec);
 }
 
 // Release a read lock
@@ -60,15 +60,14 @@ void rwlock_release_readlock(rwlock_t *lock) {
         Sem_post(&lock->writelock);
     Sem_post(&lock->lock);
     clock_gettime(CLOCK_REALTIME,&ts1);
-    fprintf(out, "%ld,READ LOCK RELEASED\n", ts1.tv_nsec);
+    fprintf(out, "%lld%ld: READ LOCK RELEASED\n", ts1.tv_sec,ts1.tv_nsec);
 }
 
 // Acquire a write lock
 void rwlock_acquire_writelock(rwlock_t *lock) {
     Sem_wait(&lock->writelock);
     clock_gettime(CLOCK_REALTIME,&ts1);
-    fprintf(out, "%ld,WRITE LOCK AQUIRED\n", ts1.tv_nsec);
-    printf("Write lock awughe");
+    fprintf(out, "%lld%ld: WRITE LOCK AQUIRED\n", ts1.tv_sec,ts1.tv_nsec);
     lockAquired++;
 }
 
@@ -76,6 +75,6 @@ void rwlock_acquire_writelock(rwlock_t *lock) {
 void rwlock_release_writelock(rwlock_t *lock) {
     Sem_post(&lock->writelock);
     clock_gettime(CLOCK_REALTIME,&ts1);
-    fprintf(out, "%ld,WRITE LOCK RELEASED\n", ts1.tv_nsec);
+    fprintf(out, "%lld%ld: WRITE LOCK RELEASED\n", ts1.tv_sec,ts1.tv_nsec);
     lockReleased++;
 }

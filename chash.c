@@ -72,7 +72,6 @@ int main() {
                 fprintf(out, "%ld: INSERT,%u,%s,%s\n", ts.tv_nsec, hash_value, name, salary_str);            
             }
         } else if (strcmp(cmd, "delete") == 0) {
-            fprintf(out, "%ld: DELETE AWAKENED\n", ts.tv_nsec);
             char *name = strtok(NULL, ",");
             if (name) {
                 delete(name);

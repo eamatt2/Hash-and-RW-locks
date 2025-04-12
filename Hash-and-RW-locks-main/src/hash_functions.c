@@ -30,6 +30,9 @@ uint32_t insert(char *name, uint32_t salary) {
     uint32_t hash = jenkins_one_at_a_time_hash(name, strlen(name));
     hashRecord *curr = head;
 
+    clock_gettime(CLOCK_REALTIME,&ts2);
+    fprintf(out, "%lld%ld: INSERT,%u,%s,%u\n", ts2.tv_sec,ts2.tv_nsec, hash, name, salary);
+    
     while(curr != NULL) {
         if(curr->hash == hash) {
             curr->salary = salary;
@@ -52,6 +55,10 @@ uint32_t insert(char *name, uint32_t salary) {
 
 // Helper function to enqueue a deletion request
 void enqueue_delete(char *name) {
+    
+    if(!strcmp(name,""))
+        return;
+    
     DeleteNode *node = (DeleteNode *) malloc(sizeof(DeleteNode));
     if (node == NULL) {
         perror("Failed to allocate memory for deletion queue node");
@@ -76,7 +83,10 @@ void process_delete_queue() {
     DeleteNode *current;
     while (deleteQueueHead != NULL) {
         current = deleteQueueHead;
-        deleteQueueHead = deleteQueueHead->next;
+        if(deleteQueueHead->next != NULL)
+            deleteQueueHead = deleteQueueHead->next;
+        else
+            deleteQueueHead = NULL;
         if (deleteQueueHead == NULL)
             deleteQueueTail = NULL;
         // Invoke the existing delete function (which handles locking)
@@ -89,8 +99,6 @@ void process_delete_queue() {
 void check_delete(char *name) {
     // If the deletion queue is currently empty and inserts are still pending, log that we are waiting on insert operations
     if (!inserts_complete && deleteQueueHead == NULL) {
-         clock_gettime(CLOCK_REALTIME, &ts2);
-         fprintf(out, "%ld: WAITING ON INSERTS\n", ts2.tv_nsec);
     }
 
     // Enqueue the deletion request
@@ -101,9 +109,6 @@ void check_delete(char *name) {
          return;
 
     // All insert commands are complete
-    clock_gettime(CLOCK_REALTIME, &ts2);
-    fprintf(out, "%lld%ld,DELETE AWAKENED\n", ts2.tv_sec, ts2.tv_nsec);
-
     // Process all pending deletions
     process_delete_queue();
 }
@@ -113,11 +118,16 @@ void check_delete(char *name) {
 
 void delete(char *name) {
     rwlock_acquire_writelock(&table_lock);
-
+    clock_gettime(CLOCK_REALTIME, &ts2);
+    fprintf(out, "%lld%ld: DELETE AWAKENED\n", ts2.tv_sec,ts2.tv_nsec);
+    
     uint32_t hash = jenkins_one_at_a_time_hash(name, strlen(name));
 
     hashRecord *curr = head, *prev = NULL;
-
+    
+    clock_gettime(CLOCK_REALTIME, &ts2);
+    fprintf(out, "%lld%ld: DELETE,%s\n", ts2.tv_sec,ts2.tv_nsec, name);
+    
     while (curr != NULL) {
         if (curr->hash == hash) {
             if (prev == NULL)
@@ -139,15 +149,20 @@ hashRecord* search(char *name) {
     rwlock_acquire_readlock(&table_lock);
 
     uint32_t hash = jenkins_one_at_a_time_hash(name,strlen(name));
-    hashRecord *curr = NULL;
+    hashRecord *curr = head;
 
     while(curr != NULL) {
         if(curr->hash == hash) {
+            clock_gettime(CLOCK_REALTIME,&ts2);
+            fprintf(out, "%lld%ld: SEARCH: %s %u\n", ts2.tv_sec, ts2.tv_nsec, curr->name, curr->salary);
             rwlock_release_readlock(&table_lock);
             return curr;
         }
         curr = curr->next;
     }
+    
+    clock_gettime(CLOCK_REALTIME,&ts2);
+    fprintf(out, "%lld%ld: SEARCH: NOT FOUND NOT FOUND\n", ts2.tv_sec, ts2.tv_nsec);
 
     rwlock_release_readlock(&table_lock);
     return NULL;
@@ -156,9 +171,8 @@ hashRecord* search(char *name) {
 
 void printBucket(hashRecord *head) {
     hashRecord *current = head;
-    printf("I am trying my best???");
     while (current != NULL) {
-        fprintf(out, "Hash: %u, Name: %s, Salary: %u\n", current->hash, current->name, current->salary);
+        fprintf(out, "%u,%s,%u\n", current->hash, current->name, current->salary);
         current = current->next;
     }
 }

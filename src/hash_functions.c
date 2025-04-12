@@ -88,7 +88,7 @@ hashRecord* search(char *name) {
     rwlock_acquire_readlock(&table_lock);
 
     uint32_t hash = jenkins_one_at_a_time_hash(name,strlen(name));
-    hashRecord *curr = NULL;
+    hashRecord *curr = head;
 
     while(curr != NULL) {
         if(curr->hash == hash) {
