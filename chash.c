@@ -18,10 +18,19 @@ long long nanosec;
 // Output file pointer
 FILE * out = NULL;
 
+//Inserts complete global
+extern int inserts_complete;
+
 // Helper to trim newlines (optional)
 void trim_newline(char *str) {
     size_t len = strlen(str);
     if (len > 0 && str[len - 1] == '\n') str[len - 1] = '\0';
+}
+
+int check_inserts(int total, int counter) { //takes the total number of inserts and checks the amnt of inserts done so far
+    if(counter == total)
+        return 1;
+    return 0;
 }
 
 int main() {
@@ -31,7 +40,24 @@ int main() {
         perror("Could not open commands.txt");
         return 1;
     }
-    printf("imalive");
+    
+    char line1[1024];
+    int total = 0;
+
+    while (fgets(line1, sizeof(line1), cmds)) {
+        char *ptr = line1;
+        while ((ptr = strstr(ptr, "insert")) != NULL) {
+            total++;
+            ptr += strlen("insert"); // move past the match
+        }
+    }
+    fclose(cmds);
+
+    cmds = fopen("commands.txt", "r");
+    if (!cmds) {
+        perror("Could not open commands.txt");
+        return 1;
+    }
 
     // Open output.txt for writing
     out = fopen("output.txt", "w");
@@ -54,7 +80,7 @@ int main() {
     }
     
 
-        
+    int counter = 0;
 
     char line[128];
     while (fgets(line, sizeof(line), cmds)) {
@@ -67,30 +93,28 @@ int main() {
             char *salary_str = strtok(NULL, ",");
             if (name && salary_str) {
                 uint32_t salary = atoi(salary_str);
-                uint32_t hash_value = insert(name, salary);
-                clock_gettime(CLOCK_REALTIME,&ts);
-                fprintf(out, "%ld: INSERT,%u,%s,%s\n", ts.tv_nsec, hash_value, name, salary_str);            
+                insert(name, salary);
+                counter++;
+                inserts_complete = check_inserts(total, counter);
+                check_delete(""); 
             }
         } else if (strcmp(cmd, "delete") == 0) {
             char *name = strtok(NULL, ",");
             if (name) {
-                delete(name);
-                fprintf(out, "%ld: DELETE,%s\n", ts.tv_nsec, name);            
+                check_delete(name);
             }
         } else if (strcmp(cmd, "search") == 0) {
             char *name = strtok(NULL, ",");
             if (name) {
-                hashRecord *res = search(name);
-                if (res) {
-                    fprintf(out, "SEARCH:%s %u\n", res->name, res->salary);
-                } else {
-                    fprintf(out, "SEARCH: NOT FOUND NOT FOUND\n");
-                }
+                search(name);
             }
         }
     }
 
-    fprintf(out, "Number of lock acquisitions: %d\n", lockAquired);
+    inserts_complete = 1;
+    check_delete("");
+
+    fprintf(out, "Finished all threads.\nNumber of lock acquisitions: %d\n", lockAquired);
     fprintf(out, "Number of lock releases: %d\n", lockReleased);
     
     printBucket(head);

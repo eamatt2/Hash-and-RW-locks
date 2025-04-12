@@ -5,11 +5,22 @@
 #include <time.h>
 
 extern rwlock_t table_lock;
+extern struct timespec ts2;
 
 struct timespec ts2;
 long long nanosec2;
 
 hashRecord *head = NULL;
+
+int inserts_complete = 0;
+
+typedef struct DeleteNode {
+    char name[50];
+    struct DeleteNode *next;
+} DeleteNode;
+
+static DeleteNode *deleteQueueHead = NULL;
+static DeleteNode *deleteQueueTail = NULL;
 
 //insert
 uint32_t insert(char *name, uint32_t salary) {
@@ -19,6 +30,9 @@ uint32_t insert(char *name, uint32_t salary) {
     uint32_t hash = jenkins_one_at_a_time_hash(name, strlen(name));
     hashRecord *curr = head;
 
+    clock_gettime(CLOCK_REALTIME,&ts2);
+    fprintf(out, "%lld%ld: INSERT,%u,%s,%u\n", ts2.tv_sec,ts2.tv_nsec, hash, name, salary);
+    
     while(curr != NULL) {
         if(curr->hash == hash) {
             curr->salary = salary;
@@ -39,34 +53,81 @@ uint32_t insert(char *name, uint32_t salary) {
     return hash;
 }
 
-//delete
-// need to be imporved
-void check_delete(char * name) {
-
-    //check if all of the insert statements are done from the input file
+// Helper function to enqueue a deletion request
+void enqueue_delete(char *name) {
     
-    //return 1 if the delete function SHOULD NOT RUN add name to a queue
-    //add the names to a queue
-    return; 
+    if(!strcmp(name,""))
+        return;
+    
+    DeleteNode *node = (DeleteNode *) malloc(sizeof(DeleteNode));
+    if (node == NULL) {
+        perror("Failed to allocate memory for deletion queue node");
+        exit(EXIT_FAILURE);
+    }
+    strncpy(node->name, name, 49);
+    node->name[49] = '\0';
+    node->next = NULL;
 
-    //if the code should run run everything in the queue and print this line
-    clock_gettime(CLOCK_REALTIME,&ts2);
-    fprintf(out, "%lld%ld,DELETE AWAKENED\n", ts2.tv_sec, ts2.tv_nsec);
-    delete(name); //make sure you delete everything in the queue
-    return;
+    if (deleteQueueTail == NULL) {
+        // Queue is empty
+        deleteQueueHead = node;
+        deleteQueueTail = node;
+    } else {
+        deleteQueueTail->next = node;
+        deleteQueueTail = node;
+    }
 }
 
+// Helper function to process all queued deletion requests
+void process_delete_queue() {
+    DeleteNode *current;
+    while (deleteQueueHead != NULL) {
+        current = deleteQueueHead;
+        if(deleteQueueHead->next != NULL)
+            deleteQueueHead = deleteQueueHead->next;
+        else
+            deleteQueueHead = NULL;
+        if (deleteQueueHead == NULL)
+            deleteQueueTail = NULL;
+        // Invoke the existing delete function (which handles locking)
+        delete(current->name);
+        free(current);
+    }
+}
+
+
+void check_delete(char *name) {
+    // If the deletion queue is currently empty and inserts are still pending, log that we are waiting on insert operations
+    if (!inserts_complete && deleteQueueHead == NULL) {
+    }
+
+    // Enqueue the deletion request
+    enqueue_delete(name);
+
+    // If inserts are not complete, return without processing the queue
+    if (!inserts_complete)
+         return;
+
+    // All insert commands are complete
+    // Process all pending deletions
+    process_delete_queue();
+}
 
 
 
 
 void delete(char *name) {
     rwlock_acquire_writelock(&table_lock);
-
+    clock_gettime(CLOCK_REALTIME, &ts2);
+    fprintf(out, "%lld%ld: DELETE AWAKENED\n", ts2.tv_sec,ts2.tv_nsec);
+    
     uint32_t hash = jenkins_one_at_a_time_hash(name, strlen(name));
 
     hashRecord *curr = head, *prev = NULL;
-
+    
+    clock_gettime(CLOCK_REALTIME, &ts2);
+    fprintf(out, "%lld%ld: DELETE,%s\n", ts2.tv_sec,ts2.tv_nsec, name);
+    
     while (curr != NULL) {
         if (curr->hash == hash) {
             if (prev == NULL)
@@ -92,11 +153,16 @@ hashRecord* search(char *name) {
 
     while(curr != NULL) {
         if(curr->hash == hash) {
+            clock_gettime(CLOCK_REALTIME,&ts2);
+            fprintf(out, "%lld%ld: SEARCH: %s %u\n", ts2.tv_sec, ts2.tv_nsec, curr->name, curr->salary);
             rwlock_release_readlock(&table_lock);
             return curr;
         }
         curr = curr->next;
     }
+    
+    clock_gettime(CLOCK_REALTIME,&ts2);
+    fprintf(out, "%lld%ld: SEARCH: NOT FOUND NOT FOUND\n", ts2.tv_sec, ts2.tv_nsec);
 
     rwlock_release_readlock(&table_lock);
     return NULL;
@@ -105,9 +171,8 @@ hashRecord* search(char *name) {
 
 void printBucket(hashRecord *head) {
     hashRecord *current = head;
-    printf("I am trying my best???");
     while (current != NULL) {
-        fprintf(out, "Hash: %u, Name: %s, Salary: %u\n", current->hash, current->name, current->salary);
+        fprintf(out, "%u,%s,%u\n", current->hash, current->name, current->salary);
         current = current->next;
     }
 }
